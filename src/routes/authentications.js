@@ -58,7 +58,7 @@ router.put("/", async (req, res, next) => {
 });
 
 // DELETE - Logout
-router.delete("/", async (req, res, next) => {
+router.delete("/", authMiddleware, async (req, res, next) => {
   try {
     const { refreshToken } = req.body;
     if (!refreshToken) {
@@ -66,7 +66,6 @@ router.delete("/", async (req, res, next) => {
         .status(400)
         .json({ status: "failed", message: "refreshToken wajib diisi" });
     }
-    // Verifikasi dulu token ada di DB
     const result = await AuthenticationsService.checkRefreshToken(refreshToken);
     if (!result) {
       return res
