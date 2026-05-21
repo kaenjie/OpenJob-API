@@ -1,15 +1,29 @@
 import pool from "../utils/db.js";
 import { nanoid } from "nanoid";
 import NotFoundError from "../exceptions/NotFoundError.js";
+import ClientError from "../exceptions/ClientError.js";
+import { normalizeApplication, normalizeApplications } from "../utils/normalize.js";
 
 class ApplicationsService {
   async createApplication({ user_id, job_id, cover_letter }) {
+    const checkDuplicate = await pool.query(
+      "SELECT id FROM applications WHERE user_id = $1 AND job_id = $2",
+      [user_id, job_id],
+    );
+
+    if (checkDuplicate.rows.length > 0) {
+      throw new ClientError(
+        "Anda sudah melamar untuk posisi ini sebelumnya",
+        400,
+      );
+    }
+
     const id = `application-${nanoid(16)}`;
     const result = await pool.query(
       "INSERT INTO applications (id, user_id, job_id, cover_letter) VALUES ($1,$2,$3,$4) RETURNING *",
       [id, user_id, job_id, cover_letter],
     );
-    return result.rows[0];
+    return normalizeApplication(result.rows[0]);
   }
 
   async getAllApplications() {
@@ -20,7 +34,7 @@ class ApplicationsService {
       LEFT JOIN jobs j ON a.job_id = j.id
       ORDER BY a.created_at DESC
     `);
-    return result.rows;
+    return normalizeApplications(result.rows);
   }
 
   async getApplicationById(id) {
@@ -36,7 +50,7 @@ class ApplicationsService {
     );
     if (result.rows.length === 0)
       throw new NotFoundError("Application tidak ditemukan");
-    return result.rows[0];
+    return normalizeApplication(result.rows[0]);
   }
 
   async getApplicationsByUser(userId) {
@@ -49,7 +63,7 @@ class ApplicationsService {
     `,
       [userId],
     );
-    return result.rows;
+    return normalizeApplications(result.rows);
   }
 
   async getApplicationsByJob(jobId) {
@@ -62,7 +76,7 @@ class ApplicationsService {
     `,
       [jobId],
     );
-    return result.rows;
+    return normalizeApplications(result.rows);
   }
 
   async updateApplicationStatus(id, { status }) {
@@ -72,7 +86,7 @@ class ApplicationsService {
     );
     if (result.rows.length === 0)
       throw new NotFoundError("Application tidak ditemukan");
-    return result.rows[0];
+    return normalizeApplication(result.rows[0]);
   }
 
   async deleteApplication(id) {
