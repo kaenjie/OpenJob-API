@@ -17,29 +17,37 @@ router.get("/", cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
   }
 });
 
-router.get("/company/:companyId", cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
-  try {
-    const jobs = await JobsService.getJobsByCompany(req.params.companyId);
-    sendResponse(res, {
-      message: "Berhasil mendapatkan jobs by company",
-      data: { jobs },
-    });
-  } catch (err) {
-    next(err);
-  }
-});
+router.get(
+  "/company/:companyId",
+  cacheMiddleware({ ttl: 3600 }),
+  async (req, res, next) => {
+    try {
+      const jobs = await JobsService.getJobsByCompany(req.params.companyId);
+      sendResponse(res, {
+        message: "Berhasil mendapatkan jobs by company",
+        data: { jobs },
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
 
-router.get("/category/:categoryId", cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
-  try {
-    const jobs = await JobsService.getJobsByCategory(req.params.categoryId);
-    sendResponse(res, {
-      message: "Berhasil mendapatkan jobs by category",
-      data: { jobs },
-    });
-  } catch (err) {
-    next(err);
-  }
-});
+router.get(
+  "/category/:categoryId",
+  cacheMiddleware({ ttl: 3600 }),
+  async (req, res, next) => {
+    try {
+      const jobs = await JobsService.getJobsByCategory(req.params.categoryId);
+      sendResponse(res, {
+        message: "Berhasil mendapatkan jobs by category",
+        data: { jobs },
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
 
 router.get("/:id", cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
   try {

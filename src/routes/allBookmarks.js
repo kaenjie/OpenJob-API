@@ -7,16 +7,21 @@ import { deleteCache } from "../utils/redis.js";
 
 const router = Router();
 
-router.get("/", authMiddleware, cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
-  try {
-    const bookmarks = await BookmarksService.getBookmarksByUser(req.user.id);
-    sendResponse(res, {
-      message: "Berhasil mendapatkan bookmarks",
-      data: { bookmarks },
-    });
-  } catch (err) {
-    next(err);
-  }
-});
+router.get(
+  "/",
+  authMiddleware,
+  cacheMiddleware({ ttl: 3600 }),
+  async (req, res, next) => {
+    try {
+      const bookmarks = await BookmarksService.getBookmarksByUser(req.user.id);
+      sendResponse(res, {
+        message: "Berhasil mendapatkan bookmarks",
+        data: { bookmarks },
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
 
 export default router;

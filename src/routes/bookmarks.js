@@ -27,22 +27,27 @@ router.post("/", authMiddleware, async (req, res, next) => {
   }
 });
 
-router.get("/:id", authMiddleware, cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
-  try {
-    const bookmark = await BookmarksService.getBookmarkById(req.params.id);
-    sendResponse(res, {
-      message: "Berhasil mendapatkan bookmark",
-      data: {
-        id: bookmark.id,
-        user_id: bookmark.user_id,
-        job_id: bookmark.job_id,
-        created_at: bookmark.created_at,
-      },
-    });
-  } catch (err) {
-    next(err);
-  }
-});
+router.get(
+  "/:id",
+  authMiddleware,
+  cacheMiddleware({ ttl: 3600 }),
+  async (req, res, next) => {
+    try {
+      const bookmark = await BookmarksService.getBookmarkById(req.params.id);
+      sendResponse(res, {
+        message: "Berhasil mendapatkan bookmark",
+        data: {
+          id: bookmark.id,
+          user_id: bookmark.user_id,
+          job_id: bookmark.job_id,
+          created_at: bookmark.created_at,
+        },
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
 
 router.delete("/", authMiddleware, async (req, res, next) => {
   try {

@@ -59,55 +59,70 @@ router.get("/", authMiddleware, async (req, res, next) => {
   }
 });
 
-router.get("/user/:userId", authMiddleware, cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
-  try {
-    const applications = await ApplicationsService.getApplicationsByUser(
-      req.params.userId,
-    );
-    sendResponse(res, {
-      message: "Berhasil mendapatkan applications by user",
-      data: { applications },
-    });
-  } catch (err) {
-    next(err);
-  }
-});
+router.get(
+  "/user/:userId",
+  authMiddleware,
+  cacheMiddleware({ ttl: 3600 }),
+  async (req, res, next) => {
+    try {
+      const applications = await ApplicationsService.getApplicationsByUser(
+        req.params.userId,
+      );
+      sendResponse(res, {
+        message: "Berhasil mendapatkan applications by user",
+        data: { applications },
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
 
-router.get("/job/:jobId", authMiddleware, cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
-  try {
-    const applications = await ApplicationsService.getApplicationsByJob(
-      req.params.jobId,
-    );
-    sendResponse(res, {
-      message: "Berhasil mendapatkan applications by job",
-      data: { applications },
-    });
-  } catch (err) {
-    next(err);
-  }
-});
+router.get(
+  "/job/:jobId",
+  authMiddleware,
+  cacheMiddleware({ ttl: 3600 }),
+  async (req, res, next) => {
+    try {
+      const applications = await ApplicationsService.getApplicationsByJob(
+        req.params.jobId,
+      );
+      sendResponse(res, {
+        message: "Berhasil mendapatkan applications by job",
+        data: { applications },
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
 
-router.get("/:id", authMiddleware, cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
-  try {
-    const application = await ApplicationsService.getApplicationById(
-      req.params.id,
-    );
-    sendResponse(res, {
-      message: "Berhasil mendapatkan application",
-      data: {
-        id: application.id,
-        user_id: application.user_id,
-        job_id: application.job_id,
-        status: application.status,
-        cover_letter: application.cover_letter,
-        created_at: application.created_at,
-        updated_at: application.updated_at,
-      },
-    });
-  } catch (err) {
-    next(err);
-  }
-});
+router.get(
+  "/:id",
+  authMiddleware,
+  cacheMiddleware({ ttl: 3600 }),
+  async (req, res, next) => {
+    try {
+      const application = await ApplicationsService.getApplicationById(
+        req.params.id,
+      );
+      sendResponse(res, {
+        message: "Berhasil mendapatkan application",
+        data: {
+          id: application.id,
+          user_id: application.user_id,
+          job_id: application.job_id,
+          status: application.status,
+          cover_letter: application.cover_letter,
+          created_at: application.created_at,
+          updated_at: application.updated_at,
+        },
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
 
 router.put(
   "/:id",

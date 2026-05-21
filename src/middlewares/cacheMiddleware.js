@@ -33,7 +33,7 @@ export const cacheMiddleware = (options = {}) => {
       // Cache successful responses (status < 400)
       if (res.statusCode < 400) {
         setCache(cacheKey, data, ttl).catch((err) =>
-          console.error("Error caching response:", err)
+          console.error("Error caching response:", err),
         );
       }
       return originalJson(data);
