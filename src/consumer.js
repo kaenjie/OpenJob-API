@@ -37,10 +37,10 @@ const processApplicationMessage = async (message) => {
       (err) => {
         console.error(
           `Applicant user not found: ${application.user_id}`,
-          err.message
+          err.message,
         );
         return null;
-      }
+      },
     );
 
     if (!applicant) {
@@ -48,23 +48,24 @@ const processApplicationMessage = async (message) => {
       return;
     }
 
-    const job = await JobsService.getJobById(application.job_id).catch((err) => {
-      console.error(
-        `Job not found: ${application.job_id}`,
-        err.message
-      );
-      return null;
-    });
+    const job = await JobsService.getJobById(application.job_id).catch(
+      (err) => {
+        console.error(`Job not found: ${application.job_id}`, err.message);
+        return null;
+      },
+    );
 
     if (!job) {
       console.log(`Skipping - job ${application.job_id} not found`);
       return;
     }
 
-    const jobOwner = await UsersService.getUserById(job.user_id).catch((err) => {
-      console.error(`Job owner not found: ${job.user_id}`, err.message);
-      return null;
-    });
+    const jobOwner = await UsersService.getUserById(job.user_id).catch(
+      (err) => {
+        console.error(`Job owner not found: ${job.user_id}`, err.message);
+        return null;
+      },
+    );
 
     if (!jobOwner || !jobOwner.email) {
       console.log(`Skipping - job owner ${job.user_id} not found or no email`);
@@ -91,7 +92,7 @@ const processApplicationMessage = async (message) => {
 
     await emailTransporter.sendMail(mailOptions);
     console.log(
-      `✅ Email successfully sent to ${jobOwner.email} for application ${application_id}`
+      `✅ Email successfully sent to ${jobOwner.email} for application ${application_id}`,
     );
   } catch (error) {
     console.error("Error processing application message:", error.message);

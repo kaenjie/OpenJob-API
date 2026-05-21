@@ -2,7 +2,10 @@ import pool from "../utils/db.js";
 import { nanoid } from "nanoid";
 import NotFoundError from "../exceptions/NotFoundError.js";
 import ClientError from "../exceptions/ClientError.js";
-import { normalizeApplication, normalizeApplications } from "../utils/normalize.js";
+import {
+  normalizeApplication,
+  normalizeApplications,
+} from "../utils/normalize.js";
 
 class ApplicationsService {
   async createApplication({ user_id, job_id, cover_letter }) {
