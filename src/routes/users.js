@@ -3,6 +3,8 @@ import UsersService from "../services/UsersService.js";
 import { sendResponse } from "../utils/response.js";
 import validateMiddleware from "../middlewares/validateMiddleware.js";
 import { registerSchema } from "../utils/validations.js";
+import { cacheMiddleware } from "../middlewares/cacheMiddleware.js";
+import { deleteCache } from "../utils/redis.js";
 
 const router = Router();
 
@@ -17,6 +19,7 @@ router.post("/", validateMiddleware(registerSchema), async (req, res, next) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        created_at: user.created_at,
       },
     });
   } catch (err) {
@@ -24,7 +27,7 @@ router.post("/", validateMiddleware(registerSchema), async (req, res, next) => {
   }
 });
 
-router.get("/:id", async (req, res, next) => {
+router.get("/:id", cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
   try {
     const user = await UsersService.getUserById(req.params.id);
     sendResponse(res, {

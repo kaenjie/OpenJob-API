@@ -4,10 +4,12 @@ import { sendResponse } from "../utils/response.js";
 import validateMiddleware from "../middlewares/validateMiddleware.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 import { companySchema, updateCompanySchema } from "../utils/validations.js";
+import { cacheMiddleware } from "../middlewares/cacheMiddleware.js";
+import { deleteCache } from "../utils/redis.js";
 
 const router = Router();
 
-router.get("/", async (req, res, next) => {
+router.get("/", cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
   try {
     const companies = await CompaniesService.getAllCompanies();
     sendResponse(res, {
@@ -19,7 +21,7 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-router.get("/:id", async (req, res, next) => {
+router.get("/:id", cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
   try {
     const company = await CompaniesService.getCompanyById(req.params.id);
     sendResponse(res, {
@@ -31,6 +33,7 @@ router.get("/:id", async (req, res, next) => {
         location: company.location,
         website: company.website,
         user_id: company.user_id,
+        created_at: company.created_at,
       },
     });
   } catch (err) {
@@ -58,6 +61,7 @@ router.post(
           location: company.location,
           website: company.website,
           user_id: company.user_id,
+          created_at: company.created_at,
         },
       });
     } catch (err) {
@@ -76,6 +80,7 @@ router.put(
         req.params.id,
         req.body,
       );
+      await deleteCache(`route:/companies/${req.params.id}`);
       sendResponse(res, {
         message: "Company berhasil diupdate",
         data: {
@@ -85,6 +90,7 @@ router.put(
           location: company.location,
           website: company.website,
           user_id: company.user_id,
+          created_at: company.created_at,
         },
       });
     } catch (err) {
@@ -96,6 +102,7 @@ router.put(
 router.delete("/:id", authMiddleware, async (req, res, next) => {
   try {
     await CompaniesService.deleteCompany(req.params.id);
+    await deleteCache(`route:/companies/${req.params.id}`);
     sendResponse(res, { message: "Company berhasil dihapus" });
   } catch (err) {
     next(err);

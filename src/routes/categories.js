@@ -3,11 +3,12 @@ import CategoriesService from "../services/CategoriesService.js";
 import { sendResponse } from "../utils/response.js";
 import validateMiddleware from "../middlewares/validateMiddleware.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
+import { cacheMiddleware } from "../middlewares/cacheMiddleware.js";
 import { categorySchema } from "../utils/validations.js";
 
 const router = Router();
 
-router.get("/", async (req, res, next) => {
+router.get("/", cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
   try {
     const categories = await CategoriesService.getAllCategories();
     sendResponse(res, {
@@ -19,7 +20,7 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-router.get("/:id", async (req, res, next) => {
+router.get("/:id", cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
   try {
     const category = await CategoriesService.getCategoryById(req.params.id);
     sendResponse(res, {
@@ -27,6 +28,7 @@ router.get("/:id", async (req, res, next) => {
       data: {
         id: category.id,
         name: category.name,
+        created_at: category.created_at,
       },
     });
   } catch (err) {
@@ -47,6 +49,7 @@ router.post(
         data: {
           id: category.id,
           name: category.name,
+          created_at: category.created_at,
         },
       });
     } catch (err) {

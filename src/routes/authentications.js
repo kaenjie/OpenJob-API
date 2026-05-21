@@ -8,7 +8,6 @@ import { loginSchema, refreshTokenSchema } from "../utils/validations.js";
 
 const router = Router();
 
-// POST - Login → 200
 router.post("/", validateMiddleware(loginSchema), async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -57,7 +56,6 @@ router.put("/", async (req, res, next) => {
   }
 });
 
-// DELETE - Logout
 router.delete("/", authMiddleware, async (req, res, next) => {
   try {
     const { refreshToken } = req.body;

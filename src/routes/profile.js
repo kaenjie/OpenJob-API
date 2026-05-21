@@ -4,10 +4,11 @@ import ApplicationsService from "../services/ApplicationsService.js";
 import BookmarksService from "../services/BookmarksService.js";
 import { sendResponse } from "../utils/response.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
+import { cacheMiddleware } from "../middlewares/cacheMiddleware.js";
 
 const router = Router();
 
-router.get("/", authMiddleware, async (req, res, next) => {
+router.get("/", authMiddleware, cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
   try {
     const user = await UsersService.getUserById(req.user.id);
     sendResponse(res, {
@@ -24,7 +25,7 @@ router.get("/", authMiddleware, async (req, res, next) => {
   }
 });
 
-router.get("/applications", authMiddleware, async (req, res, next) => {
+router.get("/applications", authMiddleware, cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
   try {
     const applications = await ApplicationsService.getApplicationsByUser(
       req.user.id,
@@ -38,7 +39,7 @@ router.get("/applications", authMiddleware, async (req, res, next) => {
   }
 });
 
-router.get("/bookmarks", authMiddleware, async (req, res, next) => {
+router.get("/bookmarks", authMiddleware, cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
   try {
     const bookmarks = await BookmarksService.getBookmarksByUser(req.user.id);
     sendResponse(res, {

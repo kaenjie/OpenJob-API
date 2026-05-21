@@ -2,6 +2,7 @@ import { Router } from "express";
 import BookmarksService from "../services/BookmarksService.js";
 import { sendResponse } from "../utils/response.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
+import { cacheMiddleware } from "../middlewares/cacheMiddleware.js";
 
 const router = Router({ mergeParams: true });
 
@@ -18,6 +19,7 @@ router.post("/", authMiddleware, async (req, res, next) => {
         id: bookmark.id,
         user_id: bookmark.user_id,
         job_id: bookmark.job_id,
+        created_at: bookmark.created_at,
       },
     });
   } catch (err) {
@@ -25,7 +27,7 @@ router.post("/", authMiddleware, async (req, res, next) => {
   }
 });
 
-router.get("/:id", authMiddleware, async (req, res, next) => {
+router.get("/:id", authMiddleware, cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
   try {
     const bookmark = await BookmarksService.getBookmarkById(req.params.id);
     sendResponse(res, {
@@ -34,6 +36,7 @@ router.get("/:id", authMiddleware, async (req, res, next) => {
         id: bookmark.id,
         user_id: bookmark.user_id,
         job_id: bookmark.job_id,
+        created_at: bookmark.created_at,
       },
     });
   } catch (err) {

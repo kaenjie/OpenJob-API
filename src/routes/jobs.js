@@ -3,11 +3,12 @@ import JobsService from "../services/JobsService.js";
 import { sendResponse } from "../utils/response.js";
 import validateMiddleware from "../middlewares/validateMiddleware.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
+import { cacheMiddleware } from "../middlewares/cacheMiddleware.js";
 import { jobSchema, updateJobSchema } from "../utils/validations.js";
 
 const router = Router();
 
-router.get("/", async (req, res, next) => {
+router.get("/", cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
   try {
     const jobs = await JobsService.getAllJobs(req.query);
     sendResponse(res, { message: "Berhasil mendapatkan jobs", data: { jobs } });
@@ -16,7 +17,7 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-router.get("/company/:companyId", async (req, res, next) => {
+router.get("/company/:companyId", cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
   try {
     const jobs = await JobsService.getJobsByCompany(req.params.companyId);
     sendResponse(res, {
@@ -28,7 +29,7 @@ router.get("/company/:companyId", async (req, res, next) => {
   }
 });
 
-router.get("/category/:categoryId", async (req, res, next) => {
+router.get("/category/:categoryId", cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
   try {
     const jobs = await JobsService.getJobsByCategory(req.params.categoryId);
     sendResponse(res, {
@@ -40,7 +41,7 @@ router.get("/category/:categoryId", async (req, res, next) => {
   }
 });
 
-router.get("/:id", async (req, res, next) => {
+router.get("/:id", cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
   try {
     const job = await JobsService.getJobById(req.params.id);
     sendResponse(res, {
@@ -52,8 +53,12 @@ router.get("/:id", async (req, res, next) => {
         title: job.title,
         description: job.description,
         location: job.location,
+        salary_min: job.salary_min,
+        salary_max: job.salary_max,
         job_type: job.job_type,
         company_name: job.company_name,
+        created_at: job.created_at,
+        updated_at: job.updated_at,
       },
     });
   } catch (err) {
@@ -78,7 +83,11 @@ router.post(
           title: job.title,
           description: job.description,
           location: job.location,
+          salary_min: job.salary_min,
+          salary_max: job.salary_max,
           job_type: job.job_type,
+          created_at: job.created_at,
+          updated_at: job.updated_at,
         },
       });
     } catch (err) {
@@ -103,7 +112,11 @@ router.put(
           title: job.title,
           description: job.description,
           location: job.location,
+          salary_min: job.salary_min,
+          salary_max: job.salary_max,
           job_type: job.job_type,
+          created_at: job.created_at,
+          updated_at: job.updated_at,
         },
       });
     } catch (err) {
