@@ -1,9 +1,10 @@
 export const normalizeApplication = (app) => {
   return {
     ...app,
-    status: typeof app.status === "string" 
-      ? app.status.replace(/^["']|["']$/g, "") 
-      : app.status,
+    status:
+      typeof app.status === "string"
+        ? app.status.replace(/^["']|["']$/g, "")
+        : app.status,
   };
 };
 
