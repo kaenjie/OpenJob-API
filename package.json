@@ -9,7 +9,8 @@
     "consumer": "node src/consumer.js",
     "consumer:dev": "nodemon src/consumer.js",
     "migrate:up": "node-pg-migrate up --migrations-dir migrations",
-    "migrate:down": "node-pg-migrate down --migrations-dir migrations"
+    "migrate:down": "node-pg-migrate down --migrations-dir migrations",
+    "db:clean": "node src/utils/clean-db.js"
   },
   "keywords": [],
   "author": "",
