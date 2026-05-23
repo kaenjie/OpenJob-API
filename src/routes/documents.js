@@ -55,11 +55,12 @@ router.post("/", authMiddleware, uploadWrapper, async (req, res, next) => {
       statusCode: 201,
       message: "Document berhasil diupload",
       data: {
-        id: document.id,
+        documentId: document.id,
         user_id: document.user_id,
         filename: document.filename,
-        original_name: document.original_name,
+        originalName: document.original_name,
         file_path: document.file_path,
+        size: req.file.size,
         created_at: document.created_at,
       },
     });
