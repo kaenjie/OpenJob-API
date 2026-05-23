@@ -50,7 +50,7 @@ router.get(
   },
 );
 
-router.get("/:id", cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
+router.get("/:id", async (req, res, next) => {
   try {
     const job = await JobsService.getJobById(req.params.id);
     sendResponse(res, {
@@ -85,8 +85,10 @@ router.post(
 
       // Invalidate cache
       await deleteCache("route:/jobs");
-      if (job.company_id) await deleteCache(`route:/jobs/company/${job.company_id}`);
-      if (job.category_id) await deleteCache(`route:/jobs/category/${job.category_id}`);
+      if (job.company_id)
+        await deleteCache(`route:/jobs/company/${job.company_id}`);
+      if (job.category_id)
+        await deleteCache(`route:/jobs/category/${job.category_id}`);
 
       sendResponse(res, {
         statusCode: 201,
@@ -118,11 +120,13 @@ router.put(
   async (req, res, next) => {
     try {
       const job = await JobsService.updateJob(req.params.id, req.body);
-      
+
       await deleteCache("route:/jobs");
       await deleteCache(`route:/jobs/${req.params.id}`);
-      if (job.company_id) await deleteCache(`route:/jobs/company/${job.company_id}`);
-      if (job.category_id) await deleteCache(`route:/jobs/category/${job.category_id}`);
+      if (job.company_id)
+        await deleteCache(`route:/jobs/company/${job.company_id}`);
+      if (job.category_id)
+        await deleteCache(`route:/jobs/category/${job.category_id}`);
 
       sendResponse(res, {
         message: "Job berhasil diupdate",
@@ -153,8 +157,10 @@ router.delete("/:id", authMiddleware, async (req, res, next) => {
 
     await deleteCache("route:/jobs");
     await deleteCache(`route:/jobs/${req.params.id}`);
-    if (job.company_id) await deleteCache(`route:/jobs/company/${job.company_id}`);
-    if (job.category_id) await deleteCache(`route:/jobs/category/${job.category_id}`);
+    if (job.company_id)
+      await deleteCache(`route:/jobs/company/${job.company_id}`);
+    if (job.category_id)
+      await deleteCache(`route:/jobs/category/${job.category_id}`);
 
     sendResponse(res, { message: "Job berhasil dihapus" });
   } catch (err) {

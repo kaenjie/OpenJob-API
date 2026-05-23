@@ -4,6 +4,7 @@ import ApplicationsService from "./services/ApplicationsService.js";
 import UsersService from "./services/UsersService.js";
 import JobsService from "./services/JobsService.js";
 import nodemailer from "nodemailer";
+import pool from "./utils/db.js";
 
 const emailTransporter = nodemailer.createTransport({
   host: process.env.MAIL_HOST || "smtp.gmail.com",
@@ -60,15 +61,32 @@ const processApplicationMessage = async (message) => {
       return;
     }
 
-    const jobOwner = await UsersService.getUserById(job.user_id).catch(
+    const companyResult = await pool
+      .query("SELECT user_id FROM companies WHERE id = $1", [job.company_id])
+      .catch((err) => {
+        console.error(`Company not found: ${job.company_id}`, err.message);
+        return { rows: [] };
+      });
+
+    const companyUserId =
+      companyResult.rows.length > 0 ? companyResult.rows[0].user_id : null;
+
+    if (!companyUserId) {
+      console.log(
+        `Skipping - company ${job.company_id} not found or has no owner`,
+      );
+      return;
+    }
+
+    const jobOwner = await UsersService.getUserById(companyUserId).catch(
       (err) => {
-        console.error(`Job owner not found: ${job.user_id}`, err.message);
+        console.error(`Job owner not found: ${companyUserId}`, err.message);
         return null;
       },
     );
 
     if (!jobOwner || !jobOwner.email) {
-      console.log(`Skipping - job owner ${job.user_id} not found or no email`);
+      console.log(`Skipping - job owner not found or no email`);
       return;
     }
 
@@ -92,7 +110,7 @@ const processApplicationMessage = async (message) => {
 
     await emailTransporter.sendMail(mailOptions);
     console.log(
-      `✅ Email successfully sent to ${jobOwner.email} for application ${application_id}`,
+      `Email successfully sent to ${jobOwner.email} for application ${application_id}`,
     );
   } catch (error) {
     console.error("Error processing application message:", error.message);
@@ -104,7 +122,7 @@ const startConsumer = async () => {
     console.log("Starting RabbitMQ consumer...");
     await initRabbitMQ();
 
-    console.log("✅ Listening for messages...");
+    console.log("Listening for messages...");
     await consumeMessages(processApplicationMessage);
   } catch (error) {
     console.error("Consumer error:", error);

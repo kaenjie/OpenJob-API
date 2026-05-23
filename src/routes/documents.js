@@ -1,14 +1,15 @@
 import { Router } from "express";
 import multer from "multer";
+import path from "path";
 import DocumentsService from "../services/DocumentsService.js";
 import { sendResponse } from "../utils/response.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
-import { cacheMiddleware } from "../middlewares/cacheMiddleware.js";
 import { uploadWrapper } from "../middlewares/uploadMiddleware.js";
+import { deleteCache } from "../utils/redis.js";
 
 const router = Router();
 
-router.get("/", cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
+router.get("/", async (req, res, next) => {
   try {
     const documents = await DocumentsService.getAllDocuments();
     sendResponse(res, {
@@ -23,6 +24,7 @@ router.get("/", cacheMiddleware({ ttl: 3600 }), async (req, res, next) => {
 router.get("/:id", async (req, res, next) => {
   try {
     const document = await DocumentsService.getDocumentById(req.params.id);
+    const absolutePath = path.resolve(document.file_path);
 
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
@@ -30,7 +32,7 @@ router.get("/:id", async (req, res, next) => {
       `attachment; filename="${document.original_name}"`,
     );
 
-    res.download(document.file_path, document.original_name);
+    res.sendFile(absolutePath);
   } catch (err) {
     next(err);
   }
@@ -69,7 +71,15 @@ router.post("/", authMiddleware, uploadWrapper, async (req, res, next) => {
   }
 });
 
-// Custom error handler untuk upload (fallback)
+router.delete("/:id", authMiddleware, async (req, res, next) => {
+  try {
+    await DocumentsService.deleteDocument(req.params.id);
+    sendResponse(res, { message: "Document berhasil dihapus" });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     if (err.code === "LIMIT_FILE_SIZE") {
@@ -95,15 +105,6 @@ router.use((err, req, res, next) => {
   }
 
   next(err);
-});
-
-router.delete("/:id", authMiddleware, async (req, res, next) => {
-  try {
-    await DocumentsService.deleteDocument(req.params.id);
-    sendResponse(res, { message: "Document berhasil dihapus" });
-  } catch (err) {
-    next(err);
-  }
 });
 
 export default router;
