@@ -6,7 +6,7 @@ class CategoriesService {
   async createCategory({ name }) {
     const id = `category-${nanoid(16)}`;
     const result = await pool.query(
-      "INSERT INTO categories (id, name) VALUES ($1,$2) RETURNING *",
+      "INSERT INTO categories (id, name) VALUES ($1,$2) RETURNING id, name, created_at, created_at AS updated_at",
       [id, name],
     );
     return result.rows[0];
@@ -14,15 +14,16 @@ class CategoriesService {
 
   async getAllCategories() {
     const result = await pool.query(
-      "SELECT * FROM categories ORDER BY created_at DESC",
+      "SELECT id, name, created_at, created_at AS updated_at FROM categories ORDER BY created_at DESC",
     );
     return result.rows;
   }
 
   async getCategoryById(id) {
-    const result = await pool.query("SELECT * FROM categories WHERE id = $1", [
-      id,
-    ]);
+    const result = await pool.query(
+      "SELECT id, name, created_at, created_at AS updated_at FROM categories WHERE id = $1",
+      [id],
+    );
     if (result.rows.length === 0)
       throw new NotFoundError("Category tidak ditemukan");
     return result.rows[0];
@@ -30,7 +31,7 @@ class CategoriesService {
 
   async updateCategory(id, { name }) {
     const result = await pool.query(
-      "UPDATE categories SET name=$1 WHERE id=$2 RETURNING *",
+      "UPDATE categories SET name=$1 WHERE id=$2 RETURNING id, name, created_at, created_at AS updated_at",
       [name, id],
     );
     if (result.rows.length === 0)
