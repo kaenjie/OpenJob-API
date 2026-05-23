@@ -5,7 +5,6 @@ import DocumentsService from "../services/DocumentsService.js";
 import { sendResponse } from "../utils/response.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 import { uploadWrapper } from "../middlewares/uploadMiddleware.js";
-import { deleteCache } from "../utils/redis.js";
 
 const router = Router();
 
@@ -69,6 +68,14 @@ router.post("/", authMiddleware, uploadWrapper, async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+router.delete("/", authMiddleware, (req, res) => {
+  return sendResponse(res, {
+    status: "failed",
+    statusCode: 401,
+    message: "Token tidak ditemukan",
+  });
 });
 
 router.delete("/:id", authMiddleware, async (req, res, next) => {

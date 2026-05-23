@@ -89,21 +89,25 @@ class JobsService {
     const values = [];
     let idx = 1;
 
-    const allowed = [
-      "company_id",
-      "category_id",
-      "title",
-      "description",
-      "location",
-      "salary_min",
-      "salary_max",
-      "job_type",
-    ];
+    const allowedMap = {
+      company_id:
+        body.company_id !== undefined ? body.company_id : body.companyId,
+      category_id:
+        body.category_id !== undefined ? body.category_id : body.categoryId,
+      title: body.title,
+      description: body.description,
+      location: body.location,
+      salary_min:
+        body.salary_min !== undefined ? body.salary_min : body.salaryMin,
+      salary_max:
+        body.salary_max !== undefined ? body.salary_max : body.salaryMax,
+      job_type: body.job_type !== undefined ? body.job_type : body.jobType,
+    };
 
-    for (const key of allowed) {
-      if (body[key] !== undefined) {
+    for (const [key, value] of Object.entries(allowedMap)) {
+      if (value !== undefined) {
         fields.push(`${key}=$${idx}`);
-        values.push(body[key]);
+        values.push(value);
         idx++;
       }
     }
@@ -111,13 +115,13 @@ class JobsService {
     if (fields.length === 0)
       throw new ClientError("Tidak ada field yang diupdate", 400);
 
-    fields.push(`updated_at=current_timestamp`);
     values.push(id);
 
     const result = await pool.query(
-      `UPDATE jobs SET ${fields.join(", ")} WHERE id=$${idx} RETURNING *`,
+      `UPDATE jobs SET ${fields.join(", ")}, updated_at=current_timestamp WHERE id=$${idx} RETURNING *`,
       values,
     );
+
     if (result.rows.length === 0)
       throw new NotFoundError("Job tidak ditemukan");
     return result.rows[0];

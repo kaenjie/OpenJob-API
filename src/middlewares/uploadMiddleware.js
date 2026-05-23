@@ -10,9 +10,7 @@ const __dirname = path.dirname(__filename);
 const uploadDir = path.join(__dirname, "../../uploads");
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
-// Validasi MIME type dan ukuran file
 const fileFilter = (req, file, cb) => {
-  // Validasi MIME type - hanya PDF
   if (file.mimetype !== "application/pdf") {
     return cb(
       new Error("File harus berformat PDF. MIME type tidak valid"),
@@ -30,16 +28,12 @@ const storage = multer.diskStorage({
   },
 });
 
-// Upload dengan validasi: max 5MB dan PDF only
 const upload = multer({
   storage,
   fileFilter,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5 MB
-  },
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-// Wrapper untuk handle multer errors
 export const uploadWrapper = (req, res, next) => {
   upload.single("document")(req, res, (err) => {
     if (err instanceof multer.MulterError) {
