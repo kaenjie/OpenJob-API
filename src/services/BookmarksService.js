@@ -39,9 +39,13 @@ class BookmarksService {
   async getBookmarksByUser(user_id) {
     const result = await pool.query(
       `
-      SELECT b.*, j.title AS job_title, j.location AS job_location
+      SELECT 
+        b.*, 
+        j.company_id, j.category_id, j.title AS job_title, j.description AS job_description, j.location AS job_location, j.salary_min, j.salary_max, j.job_type, j.created_at AS job_created_at, j.updated_at AS job_updated_at,
+        c.name AS company_name, c.description AS company_description, c.location AS company_location, c.website AS company_website
       FROM bookmarks b
       LEFT JOIN jobs j ON b.job_id = j.id
+      LEFT JOIN companies c ON j.company_id = c.id
       WHERE b.user_id = $1 ORDER BY b.created_at DESC
     `,
       [user_id],

@@ -3,6 +3,7 @@ import BookmarksService from "../services/BookmarksService.js";
 import { sendResponse } from "../utils/response.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 import { cacheMiddleware } from "../middlewares/cacheMiddleware.js";
+import { deleteCache, deleteCacheByPattern } from "../utils/redis.js";
 
 const router = Router({ mergeParams: true });
 
@@ -12,6 +13,9 @@ router.post("/", authMiddleware, async (req, res, next) => {
       user_id: req.user.id,
       job_id: req.params.jobId,
     });
+    
+    await deleteCacheByPattern(`route:/bookmarks*`);
+    
     sendResponse(res, {
       statusCode: 201,
       message: "Bookmark berhasil ditambahkan",
@@ -55,6 +59,11 @@ router.delete("/", authMiddleware, async (req, res, next) => {
       req.user.id,
       req.params.jobId,
     );
+    
+    // invalidate cache
+    await deleteCacheByPattern(`route:/jobs/${req.params.jobId}/bookmark*`);
+    await deleteCacheByPattern(`route:/bookmarks*`);
+
     sendResponse(res, { message: "Bookmark berhasil dihapus" });
   } catch (err) {
     next(err);
