@@ -5,6 +5,7 @@ import validateMiddleware from "../middlewares/validateMiddleware.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 import { cacheMiddleware } from "../middlewares/cacheMiddleware.js";
 import { jobSchema, updateJobSchema } from "../utils/validations.js";
+import { deleteCache } from "../utils/redis.js";
 
 const router = Router();
 
@@ -81,6 +82,12 @@ router.post(
   async (req, res, next) => {
     try {
       const job = await JobsService.createJob(req.body);
+
+      // Invalidate cache
+      await deleteCache("route:/jobs");
+      if (job.company_id) await deleteCache(`route:/jobs/company/${job.company_id}`);
+      if (job.category_id) await deleteCache(`route:/jobs/category/${job.category_id}`);
+
       sendResponse(res, {
         statusCode: 201,
         message: "Job berhasil dibuat",
@@ -111,6 +118,12 @@ router.put(
   async (req, res, next) => {
     try {
       const job = await JobsService.updateJob(req.params.id, req.body);
+      
+      await deleteCache("route:/jobs");
+      await deleteCache(`route:/jobs/${req.params.id}`);
+      if (job.company_id) await deleteCache(`route:/jobs/company/${job.company_id}`);
+      if (job.category_id) await deleteCache(`route:/jobs/category/${job.category_id}`);
+
       sendResponse(res, {
         message: "Job berhasil diupdate",
         data: {
@@ -135,7 +148,14 @@ router.put(
 
 router.delete("/:id", authMiddleware, async (req, res, next) => {
   try {
+    const job = await JobsService.getJobById(req.params.id);
     await JobsService.deleteJob(req.params.id);
+
+    await deleteCache("route:/jobs");
+    await deleteCache(`route:/jobs/${req.params.id}`);
+    if (job.company_id) await deleteCache(`route:/jobs/company/${job.company_id}`);
+    if (job.category_id) await deleteCache(`route:/jobs/category/${job.category_id}`);
+
     sendResponse(res, { message: "Job berhasil dihapus" });
   } catch (err) {
     next(err);

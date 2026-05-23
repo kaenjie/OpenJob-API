@@ -51,6 +51,7 @@ router.post(
         ...req.body,
         user_id: req.user.id,
       });
+      await deleteCache("route:/companies");
       sendResponse(res, {
         statusCode: 201,
         message: "Company berhasil dibuat",
@@ -80,6 +81,7 @@ router.put(
         req.params.id,
         req.body,
       );
+      await deleteCache("route:/companies");
       await deleteCache(`route:/companies/${req.params.id}`);
       sendResponse(res, {
         message: "Company berhasil diupdate",
@@ -102,6 +104,7 @@ router.put(
 router.delete("/:id", authMiddleware, async (req, res, next) => {
   try {
     await CompaniesService.deleteCompany(req.params.id);
+    await deleteCache("route:/companies");
     await deleteCache(`route:/companies/${req.params.id}`);
     sendResponse(res, { message: "Company berhasil dihapus" });
   } catch (err) {

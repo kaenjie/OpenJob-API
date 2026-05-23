@@ -6,5 +6,6 @@ export const sendResponse = (
     status,
     message,
     data,
+    timestamp: new Date().toISOString(),
   });
 };

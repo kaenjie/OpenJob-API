@@ -28,6 +28,9 @@ router.post(
         application_id: application.id,
       });
 
+      await deleteCache(`route:/applications/user/${application.user_id}`);
+      await deleteCache(`route:/applications/job/${application.job_id}`);
+
       sendResponse(res, {
         statusCode: 201,
         message: "Lamaran berhasil dikirim",

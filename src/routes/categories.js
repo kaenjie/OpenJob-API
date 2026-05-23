@@ -5,6 +5,7 @@ import validateMiddleware from "../middlewares/validateMiddleware.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 import { cacheMiddleware } from "../middlewares/cacheMiddleware.js";
 import { categorySchema } from "../utils/validations.js";
+import { deleteCache } from "../utils/redis.js";
 
 const router = Router();
 
@@ -43,6 +44,7 @@ router.post(
   async (req, res, next) => {
     try {
       const category = await CategoriesService.createCategory(req.body);
+      await deleteCache("route:/categories");
       sendResponse(res, {
         statusCode: 201,
         message: "Category berhasil dibuat",
@@ -68,6 +70,8 @@ router.put(
         req.params.id,
         req.body,
       );
+      await deleteCache("route:/categories");
+      await deleteCache(`route:/categories/${req.params.id}`);
       sendResponse(res, {
         message: "Category berhasil diupdate",
         data: {
@@ -84,6 +88,8 @@ router.put(
 router.delete("/:id", authMiddleware, async (req, res, next) => {
   try {
     await CategoriesService.deleteCategory(req.params.id);
+    await deleteCache("route:/categories");
+    await deleteCache(`route:/categories/${req.params.id}`);
     sendResponse(res, { message: "Category berhasil dihapus" });
   } catch (err) {
     next(err);
