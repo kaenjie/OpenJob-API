@@ -31,10 +31,11 @@ class ApplicationsService {
 
   async getAllApplications() {
     const result = await pool.query(`
-      SELECT a.*, u.name AS user_name, j.title AS job_title
+      SELECT a.*, u.name AS user_name, j.title AS job_title, j.location AS job_location, j.job_type AS job_type, c.name AS company_name, j.company_id AS company_id
       FROM applications a
       LEFT JOIN users u ON a.user_id = u.id
       LEFT JOIN jobs j ON a.job_id = j.id
+      LEFT JOIN companies c ON j.company_id = c.id
       ORDER BY a.created_at DESC
     `);
     return normalizeApplications(result.rows);
@@ -43,10 +44,11 @@ class ApplicationsService {
   async getApplicationById(id) {
     const result = await pool.query(
       `
-      SELECT a.*, u.name AS user_name, j.title AS job_title
+      SELECT a.*, u.name AS user_name, j.title AS job_title, j.location AS job_location, j.job_type AS job_type, c.name AS company_name, j.company_id AS company_id
       FROM applications a
       LEFT JOIN users u ON a.user_id = u.id
       LEFT JOIN jobs j ON a.job_id = j.id
+      LEFT JOIN companies c ON j.company_id = c.id
       WHERE a.id = $1
     `,
       [id],
@@ -59,9 +61,11 @@ class ApplicationsService {
   async getApplicationsByUser(userId) {
     const result = await pool.query(
       `
-      SELECT a.*, j.title AS job_title
+      SELECT a.*, u.name AS user_name, j.title AS job_title, j.location AS job_location, j.job_type AS job_type, j.salary_min, j.salary_max, c.name AS company_name, j.company_id AS company_id
       FROM applications a
+      LEFT JOIN users u ON a.user_id = u.id
       LEFT JOIN jobs j ON a.job_id = j.id
+      LEFT JOIN companies c ON j.company_id = c.id
       WHERE a.user_id = $1 ORDER BY a.created_at DESC
     `,
       [userId],
@@ -72,9 +76,11 @@ class ApplicationsService {
   async getApplicationsByJob(jobId) {
     const result = await pool.query(
       `
-      SELECT a.*, u.name AS user_name
+      SELECT a.*, u.name AS user_name, j.title AS job_title, j.location AS job_location, j.job_type AS job_type, c.name AS company_name, j.company_id AS company_id
       FROM applications a
       LEFT JOIN users u ON a.user_id = u.id
+      LEFT JOIN jobs j ON a.job_id = j.id
+      LEFT JOIN companies c ON j.company_id = c.id
       WHERE a.job_id = $1 ORDER BY a.created_at DESC
     `,
       [jobId],
