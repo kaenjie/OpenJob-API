@@ -98,9 +98,6 @@ class JobsService {
       "salary_min",
       "salary_max",
       "job_type",
-      "experience_level",
-      "location_type",
-      "status",
     ];
 
     for (const key of allowed) {
